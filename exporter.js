@@ -104,7 +104,7 @@ function delay(ms) {
     await new Promise(resolve => loginPage.on('close', resolve));
     const chapters = await getBookChapters(browser, param);
     console.log(chapters)
-    for (let i = 43; i < chapters.length; i++) {
+    for (let i = 0; i < chapters.length; i++) {
         const element = chapters[i];
         console.log(element);
         if (element.free == 0 && element.purchased == 0) {
