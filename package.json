@@ -3,13 +3,9 @@
   "version": "1.0.0",
   "description": "",
   "main": "exporter.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
   "author": "@aquamarine5",
   "type": "module",
   "dependencies": {
-    "axios": "^1.7.9",
     "puppeteer-core": "^23.10.4"
   }
 }

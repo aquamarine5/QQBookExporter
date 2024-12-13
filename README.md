@@ -1,10 +1,15 @@
 # QQBookExporter
 
+[![wakatime](https://wakatime.com/badge/github/aquamarine5/QQBookExporter.svg)](https://wakatime.com/badge/github/aquamarine5/QQBookExporter)
+
 ## Setup
 
 ```bash
 pnpm i
 ```
+
+> [!NOTE]
+> QQBookExporter 使用 puppeteer-core 并默认指向 Windows 上的 Edge 浏览器，可以自行更改 executablePath 来指定浏览器
 
 ## 如何使用？
 

@@ -2,7 +2,6 @@
  * @Author: aquamarine5 && aquamarine5_@outlook.com
  * Copyright (c) 2024 by @aquamarine5, RC. All Rights Reversed.
  */
-import axios from "axios";
 import puppeteer from "puppeteer-core";
 import fs from "fs";
 import { Browser } from "puppeteer-core";
@@ -121,5 +120,6 @@ function delay(ms) {
         fs.writeFileSync(`${outputDir}/${element.cid}-${element.chapterName}.txt`, `${content}\n`, 'utf-8');
         await delay(500);
     }
+    console.log('导出完成');
     //await browser.close();
 })();
