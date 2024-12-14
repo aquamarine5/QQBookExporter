@@ -9,16 +9,14 @@ pnpm i
 ```
 
 > [!TIP]
-> 如果不使用 `pnpm` ，也可输入
+> 如果不使用 `pnpm` ，也可输入以下命令来安装依赖。
 >
 > ```bash
 > npm i
 > ```
->
-> 安装对应依赖
 
 > [!NOTE]
-> QQBookExporter 使用 `puppeteer-core` 并默认指向 Windows 上的 Edge 浏览器，可以自行更改 `executablePath` 来指定浏览器
+> QQBookExporter 使用 `puppeteer-core` 并默认指向 Windows 上的 Edge 浏览器，可以自行更改 `executablePath` 来指定浏览器。
 
 ## 如何使用？
 
@@ -40,7 +38,7 @@ node exporter.js 32856733 1,2 output
 - 登录完成后，关闭当前选项卡页，随后 `QQBookExporter` 会自动开始抓取电子书内容并以TXT格式保存在 `output\${chapter-index}-${chapter-name}.txt` 下。
 - 因为 `ignore-chapters` 设置为 `1,2` ，并不会捕捉第一第二章节（封面、版权内容）
 
-> ![image.png](https://s2.loli.net/2024/12/14/N8aqb1gMU3jDI4C.png)
+> ![image.png](https://s2.loli.net/2024/12/14/N8aqb1gMU3jDI4C.png)  
 > 输出文件目录
 
 ## LICENSE
