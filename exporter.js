@@ -68,7 +68,7 @@ function delay(ms) {
 (async () => {
     const args = process.argv.slice(2);
     if (args.length === 0) {
-        console.error('请提供参数');
+        console.error('请提供全部参数');
         const browser = await puppeteer.launch({
             executablePath: "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe",
             headless: false
@@ -80,11 +80,12 @@ function delay(ms) {
     const outputDir = args[2];
     let ignoreColumnIndex = []
     if (ignoreColumn && ignoreColumn != "-") {
+        console.warn(`忽略章节: 空`);
         ignoreColumnIndex = ignoreColumn.split(",").map(item => parseInt(item))
     }
 
     if (!outputDir) {
-        console.error(`没有提供输出路径, 使用默认路径: ${DEFAULT_OUTPUT_DIR}/${param}`);
+        console.warn(`没有提供输出路径, 使用默认路径: ${DEFAULT_OUTPUT_DIR}/${param}`);
         outputDir = DEFAULT_OUTPUT_DIR + "/" + param;
     }
     if (!fs.existsSync(outputDir)) {
@@ -121,5 +122,5 @@ function delay(ms) {
         await delay(500);
     }
     console.log('导出完成');
-    //await browser.close();
+    await browser.close();
 })();
