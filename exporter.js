@@ -118,7 +118,8 @@ function delay(ms) {
         }
 
         const content = await getContent(browser, param, element.cid);
-        fs.writeFileSync(`${outputDir}/${element.cid}-${element.chapterName}.txt`, `${content}\n`, 'utf-8');
+        var filename = `${outputDir}/${element.cid}-${element.chapterName}.txt`.replace(" ", "")
+        fs.writeFileSync(filename, `${content}\n`, 'utf-8');
         await delay(500);
     }
     console.log('导出完成');
