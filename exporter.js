@@ -118,7 +118,7 @@ function delay(ms) {
         }
 
         const content = await getContent(browser, param, element.cid);
-        var filename = `${outputDir}/${element.cid}-${element.chapterName}.txt`.replace(" ", "")
+        var filename = `${outputDir}/${element.cid}-${element.chapterName}.txt`.replace(" ", "").replace("\\", "").replace("/", "");
         fs.writeFileSync(filename, `${content}\n`, 'utf-8');
         await delay(500);
     }
