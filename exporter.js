@@ -4,15 +4,13 @@
  */
 import puppeteer from "puppeteer-core";
 import fs from "fs";
-import { Browser } from "puppeteer-core";
 import axios from "axios";
-import { Page } from "puppeteer-core";
 import { Command } from "commander";
 
 const DEFAULT_OUTPUT_DIR = "output"
 
 /**
- * @param {Browser} browser 
+ * @param {import("puppeteer-core").Browser} browser 
  * @param {number} bookid 
  */
 async function getBookChapters(browser, bookid) {
@@ -34,7 +32,7 @@ async function getBookChapters(browser, bookid) {
 
 /**
  * 
- * @param {Browser} browser 
+ * @param {import("puppeteer-core").Browser} browser 
  * @param {number} bid 
  * @param {number} cid 
  * @param {string} mode 
@@ -61,7 +59,7 @@ async function loadContent(browser, bid, cid, mode, outputDir) {
 
 /**
  * 
- * @param {Page} page 
+ * @param {import("puppeteer-core").Page} page 
  * @returns {Promise<string>}
  */
 async function getBookContentForText(page) {
@@ -83,7 +81,7 @@ async function getBookContentForText(page) {
 
 /**
  * 
- * @param {Page} page 
+ * @param {import("puppeteer-core").Page} page 
  * @param {number} cid 
  * @param {string} outputDir 
  * @returns {Promise<string>}
@@ -182,21 +180,24 @@ function delay(ms) {
         .version("1.3.0")
         .argument("<bookId>", "书籍ID")
         .option("-x, --ignore <chapters>", "要忽略的章节列表，以,分隔，或以-定义区间", "")
-        .option("-o, --output <directory>", "输出目录", "output")
+        .option("-o, --output <directory>", "输出目录", DEFAULT_OUTPUT_DIR)
         .option("-m, --mode <mode>", "导出模式（txt 或 markdown）", "markdown")
         .action(async (bookId, options) => {
             let ignoreText = options.ignore
             let ignoreChapters = []
             if (/^\d+,\d+$/.test(ignoreText)) {
-                ignoreChapters = ignoreColumn.split(",").map(item => parseInt(item))
+                ignoreChapters = ignoreText.split(",").map(item => parseInt(item))
             } else if (/^\d+-\d+$/.test(ignoreText)) {
-                const [start, end] = part.split('-').map(Number);
+                const [start, end] = ignoreText.split('-').map(Number);
                 for (let i = start; i <= end; i++) {
                     ignoreChapters.push(i);
                 }
             } else if (/^\d+$/.test(ignoreText)) {
                 ignoreChapters.push(parseInt(ignoreText))
-            } else {
+            } else if (ignoreText == "") {
+                ignoreChapters = []
+            }
+            else {
                 console.error("ignore-chapters 输入格式错误。")
                 return
             }
@@ -206,7 +207,7 @@ function delay(ms) {
             if (!fs.existsSync(outputDir)) {
                 fs.mkdirSync(outputDir, { recursive: true });
             }
-            const baseUrl = `https://book.qq.com/book-detail/${param}`;
+            const baseUrl = `https://book.qq.com/book-detail/${bookId}`;
             const browser = await puppeteer.launch({
                 executablePath: "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe",
                 headless: false,
@@ -220,7 +221,7 @@ function delay(ms) {
             console.log(`打开书本页面：${baseUrl}，点击登录进行登录操作，然后关闭页面。`)
             await new Promise(resolve => loginPage.on('close', resolve));
             console.log("开始下载。")
-            const chapters = await getBookChapters(browser, param);
+            const chapters = await getBookChapters(browser, bookId);
             console.log(chapters)
             for (let i = 0; i < chapters.length; i++) {
                 const element = chapters[i];
@@ -229,13 +230,13 @@ function delay(ms) {
                     console.log(`跳过付费章节: ${element.cid}`);
                     //continue;
                 }
-                if (ignoreColumnIndex.includes(element.cid)) {
+                if (ignoreChapters.includes(element.cid)) {
                     console.log(`忽略章节: ${element.cid}`);
                     continue;
                 }
 
                 const content = await loadContent(browser, bookId, element.cid, mode, outputDir);
-                var filename = `${element.cid}-${element.chapterName}.${mode2extension[mode]}`.replace(/[\\\/]/g, "")
+                var filename = `${element.cid}-${element.chapterName}.${mode2extension[mode]}`.replace(/[\\/]/g, "")
                 fs.writeFileSync(`${outputDir}\\${filename}`, `${content}\n`, 'utf-8');
                 await delay(500);
             }
