@@ -87,8 +87,8 @@ async function getBookContentForText(page) {
  * @returns {Promise<string>}
  */
 async function getBookContentForMarkdown(page, cid, outputDir) {
-    let result = await page.evaluate(() => {
-        let elements = document.querySelectorAll('h1,p,div.bodyPic');
+    let result = await page.evaluate(cid => {
+        let elements = document.getElementById("article").querySelectorAll('h1,p,div.bodyPic');
         let contents = []
         for (let i = 0; i < elements.length; i++) {
             let e = elements[i];
@@ -137,15 +137,34 @@ async function getBookContentForMarkdown(page, cid, outputDir) {
                         }
                     });
                 }
-            } else if (e.tagName == "H1") {
+            } else if (e.tagName == "H1" && e.className == "firstTitle-1") {
                 contents.push({
                     "text": `# ${e.textContent}\n`,
                     "image": null
                 })
+            } else if (e.tagName == "H1" && e.className == "secondTitle-1") {
+                contents.push({
+                    "text": `## ${e.textContent}\n`,
+                    "image": null
+                })
+            } else if (e.tagName == "H1" && e.className == "frontCover") {
+                let img = e.querySelector('img');
+                let filename = img.src.split("/").pop();
+                let path = `images/${cid}/${filename}`;
+                if (img) {
+                    contents.push({
+                        "text": `![${img.alt}](${path})`,
+                        "image": {
+                            "src": img.src,
+                            "path": path,
+                            "dir": `images/${cid}`
+                        }
+                    });
+                }
             }
         }
         return contents
-    })
+    }, cid)
     let text = ""
     result.forEach(async (element) => {
         if (element.image) {
