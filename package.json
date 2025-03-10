@@ -6,6 +6,13 @@
   "author": "@aquamarine5",
   "type": "module",
   "dependencies": {
+    "axios": "^1.8.2",
+    "commander": "^13.1.0",
     "puppeteer-core": "^23.10.4"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.22.0",
+    "eslint": "^9.22.0",
+    "globals": "^16.0.0"
   }
 }
