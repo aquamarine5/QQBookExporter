@@ -44,8 +44,18 @@ async function loadContent(browser, bid, cid, mode, outputDir) {
     const url = `https://book.qq.com/book-read/${bid}/${cid}`;
     await page.goto(url, { timeout: 60000 });
     console.log(`已打开页面: ${url}`);
-    await page.waitForResponse(response =>
-        response.url().startsWith(url) && response.request().method() === 'POST');
+    try {
+        await page.waitForResponse(response =>
+            response.url().startsWith(url) && response.request().method() === 'POST', { timeout: 10000 });
+    } catch (error) {
+        if (error.name === "TimeoutError") {
+            console.error("加载错误，等待2秒后尝试读取文章内容。")
+            await delay(2000);
+            return "";
+        } else {
+            throw error;
+        }
+    }
     if (mode === "txt") {
         let content = await getBookContentForText(page)
         await page.close();
@@ -125,7 +135,7 @@ async function getBookContentForMarkdown(page, cid, outputDir) {
             }
             else if (e.tagName == "DIV" && e.className == "bodyPic") {
                 let img = e.querySelector('img');
-                let filename = img.src.split("/").pop();
+                let filename = img.src.split("/").pop().split("?")[0];
                 let path = `images/${cid}/${filename}`;
                 if (img) {
                     contents.push({
@@ -149,7 +159,7 @@ async function getBookContentForMarkdown(page, cid, outputDir) {
                 })
             } else if (e.tagName == "H1" && e.className == "frontCover") {
                 let img = e.querySelector('img');
-                let filename = img.src.split("/").pop();
+                let filename = img.src.split("/").pop().split("?")[0];
                 let path = `images/${cid}/${filename}`;
                 if (img) {
                     contents.push({
@@ -166,7 +176,7 @@ async function getBookContentForMarkdown(page, cid, outputDir) {
         return contents
     }, cid)
     let text = ""
-    result.forEach(async (element) => {
+    for (const element of result) {
         if (element.image) {
             let img = element.image;
             fs.mkdirSync(`${outputDir}/${img.dir}`, { recursive: true });
@@ -178,10 +188,11 @@ async function getBookContentForMarkdown(page, cid, outputDir) {
                     "User-Agent": `Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36 Edg/134.0.0.0`
                 }
             })
-            fs.writeFileSync(img.path, response.data);
+            fs.writeFileSync(`${outputDir}/${img.path}`, response.data);
         }
+        console.log(element)
         text += element.text + "\n";
-    })
+    }
     return text
 }
 
