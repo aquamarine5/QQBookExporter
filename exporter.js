@@ -51,7 +51,6 @@ async function loadContent(browser, bid, cid, mode, outputDir) {
         if (error.name === "TimeoutError") {
             console.error("加载错误，等待2秒后尝试读取文章内容。")
             await delay(2000);
-            return "";
         } else {
             throw error;
         }
