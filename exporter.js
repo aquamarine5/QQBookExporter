@@ -39,10 +39,8 @@ async function getBookChapters(browser, bookid) {
 async function getContent(browser, bid, cid) {
     const page = await browser.newPage();
     const url = `https://book.qq.com/book-read/${bid}/${cid}`;
-    await page.goto(url, { timeout: 60000 });
+    await page.goto(url, { timeout: 60000, waitUntil: 'networkidle2' });
     console.log(`已打开页面: ${url}`);
-    await page.waitForResponse(response =>
-        response.url().startsWith(url) && response.request().method() === 'POST');
     const content = await page.evaluate(() => {
         let pElements = document.querySelectorAll('p');
         let textContents = [];
@@ -52,7 +50,6 @@ async function getContent(browser, bid, cid) {
             if (pText == "◆参考书目") {
                 return textContents.join("\n");
             }
-            console.log(i)
             textContents.push(pText);
         }
         return textContents.join("\n");
@@ -76,8 +73,8 @@ function delay(ms) {
         return
     }
     const param = args[0];
-    const ignoreColumn = args[1];
-    const outputDir = args[2];
+    let ignoreColumn = args[1];
+    let outputDir = args[2];
     let ignoreColumnIndex = []
     if (ignoreColumn && ignoreColumn != "-") {
         console.warn(`忽略章节: 空`);
