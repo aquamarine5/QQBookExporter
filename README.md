@@ -2,6 +2,13 @@
 
 [![wakatime](https://wakatime.com/badge/github/aquamarine5/QQBookExporter.svg)](https://wakatime.com/badge/github/aquamarine5/QQBookExporter)
 
+## 功能
+
+- 将 QQ 阅读的书籍导出为格式优美的 Markdown 文件。
+- 保留原有的标题、加粗、列表、图片等格式。
+- 自动跳过付费章节（除非已购买）。
+- 支持忽略指定章节。
+
 ## Setup
 
 ```bash
@@ -34,12 +41,10 @@ node exporter.js <bid> [<ignore-chapters>] [<output-dir>]
 node exporter.js 53350666 1,2 output
 ```
 
-- 首先，`puppeteer`会打开 [https://book.qq.com/book-detail/53350666](https://book.qq.com/book-detail/53350666) 页面，用户在此页面进行账号登录，以抓取收费内容。
-- 登录完成后，关闭当前选项卡页，随后 `QQBookExporter` 会自动开始抓取电子书内容并以TXT格式保存在 `output\${chapter-index}-${chapter-name}.txt` 下。
-- 因为 `ignore-chapters` 设置为 `1,2` ，并不会捕捉第一第二章节（封面、版权内容）
-
-> ![image.png](https://s2.loli.net/2024/12/14/N8aqb1gMU3jDI4C.png)  
-> 输出文件目录
+- 首先，`puppeteer`会打开 [https://book.qq.com/book-detail/53350666](https://book.qq.com/book-detail/53350666) 页面，用户在此页面进行账号登录，以抓取需要登录才能阅读的内容（包括已购买的付费章节）。
+- 登录完成后，关闭当前选项卡页，随后 `QQBookExporter` 会自动开始抓取电子书内容并以 Markdown 格式保存在 `output-dir` 指定的目录下，默认是 `output/<bid>/`。
+- 文件命名格式为 `${chapter.cid}-${chapter.chapterName}.md`。
+- 因为 `ignore-chapters` 设置为 `1,2` ，并不会捕捉 `cid` 为 1 和 2 的章节（通常是封面、版权内容）。
 
 ## LICENSE
 

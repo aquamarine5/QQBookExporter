@@ -130,3 +130,7 @@ dist
 .pnp.*
 
 output/
+
+# QQBook Exporter User Data
+# Prevents committing user-specific browser session data
+/.qqbook_user_data/
