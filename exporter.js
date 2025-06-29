@@ -105,9 +105,30 @@ function delay(ms) {
             height: 1080
         }
     });
-    const loginPage = await browser.newPage();
-    await loginPage.goto(baseUrl);
-    await new Promise(resolve => loginPage.on('close', resolve));
+    
+    const page = await browser.newPage();
+    console.log("正在检查登录状态...");
+    await page.goto(baseUrl, { waitUntil: 'networkidle2' });
+
+    // 使用一个通用选择器来查找登录链接/按钮
+    const loginSelector = 'a[href*="login"]';
+
+    try {
+        await page.waitForSelector(loginSelector, { timeout: 5000 });
+        // 如果选择器存在，说明用户未登录
+        console.log("检测到您尚未登录，请在弹出的浏览器窗口中完成登录。");
+        console.log("脚本将等待您登录，完成后会自动继续...");
+
+        // 等待登录按钮消失，表示登录成功（最长等待3分钟）
+        await page.waitForSelector(loginSelector, { hidden: true, timeout: 180000 });
+        console.log("登录成功！继续执行导出任务。");
+    } catch (error) {
+        // 如果在超时时间内未找到登录按钮，则假定用户已登录
+        console.log("检测到您已登录，将直接开始导出。");
+    }
+    
+    await page.close(); // 关闭用于检查登录的页面
+
     const chapters = await getBookChapters(browser, param);
     console.log(chapters)
     const turndownService = new TurndownService({ headingStyle: 'atx', codeBlockStyle: 'fenced' });
