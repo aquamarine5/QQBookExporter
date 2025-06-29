@@ -5,6 +5,7 @@
 import puppeteer from "puppeteer-core";
 import fs from "fs";
 import { Browser } from "puppeteer-core";
+import TurndownService from "turndown";
 
 const DEFAULT_OUTPUT_DIR = "output"
 
@@ -34,28 +35,29 @@ async function getBookChapters(browser, bookid) {
  * @param {Browser} browser 
  * @param {number} bid 
  * @param {number} cid 
- * @returns {Promise<string[]>}
+ * @returns {Promise<string>}
  */
 async function getContent(browser, bid, cid) {
     const page = await browser.newPage();
     const url = `https://book.qq.com/book-read/${bid}/${cid}`;
     await page.goto(url, { timeout: 60000, waitUntil: 'networkidle2' });
     console.log(`已打开页面: ${url}`);
-    const content = await page.evaluate(() => {
-        let pElements = document.querySelectorAll('p');
-        let textContents = [];
-        for (let i = 0; i < pElements.length; i++) {
-            let p = pElements[i];
-            let pText = p.textContent;
-            if (pText == "◆参考书目") {
-                return textContents.join("\n");
-            }
-            textContents.push(pText);
+    const contentHTML = await page.evaluate(() => {
+        if (window.__NUXT__?.data?.[0]?.currentContent?.content) {
+            return window.__NUXT__.data[0].currentContent.content;
         }
-        return textContents.join("\n");
+        // Fallback if the NUXT object isn't found
+        const contentElement = document.querySelector('.reader_content_area');
+        if (contentElement) {
+            const clone = contentElement.cloneNode(true);
+            // Remove script tags to avoid including them in the markdown
+            clone.querySelectorAll('script').forEach(s => s.remove());
+            return clone.innerHTML;
+        }
+        return "<!-- Failed to extract content -->";
     });
     await page.close();
-    return content;
+    return contentHTML;
 }
 
 function delay(ms) {
@@ -102,21 +104,30 @@ function delay(ms) {
     await new Promise(resolve => loginPage.on('close', resolve));
     const chapters = await getBookChapters(browser, param);
     console.log(chapters)
+    const turndownService = new TurndownService({ headingStyle: 'atx', codeBlockStyle: 'fenced' });
     for (let i = 0; i < chapters.length; i++) {
         const element = chapters[i];
         console.log(element);
         if (element.free == 0 && element.purchased == 0) {
             console.log(`跳过付费章节: ${element.cid}`);
-            //continue;
+            continue;
         }
         if (ignoreColumnIndex.includes(element.cid)) {
             console.log(`忽略章节: ${element.cid}`);
             continue;
         }
 
-        const content = await getContent(browser, param, element.cid);
-        var filename = `${element.cid}-${element.chapterName}.txt`.replace(/ /g, "").replace(/\\/g, "").replace(/\//g, "");
-        fs.writeFileSync(`${outputDir}\\${filename}`, `${content}\n`, 'utf-8');
+        const htmlContent = await getContent(browser, param, element.cid);
+        let markdownContent = turndownService.turndown(htmlContent);
+
+        const stopMarker = "◆参考书目";
+        const stopIndex = markdownContent.indexOf(stopMarker);
+        if (stopIndex !== -1) {
+            markdownContent = markdownContent.substring(0, stopIndex);
+        }
+
+        var filename = `${element.cid}-${element.chapterName}.md`.replace(/ /g, "").replace(/\\/g, "").replace(/\//g, "");
+        fs.writeFileSync(`${outputDir}\\${filename}`, `${markdownContent}\n`, 'utf-8');
         await delay(500);
     }
     console.log('导出完成');
