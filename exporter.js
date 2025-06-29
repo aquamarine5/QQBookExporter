@@ -4,10 +4,12 @@
  */
 import puppeteer from "puppeteer-core";
 import fs from "fs";
+import path from "path";
 import { Browser } from "puppeteer-core";
 import TurndownService from "turndown";
 
 const DEFAULT_OUTPUT_DIR = "output"
+const USER_DATA_DIR = path.join(process.cwd(), '.qqbook_user_data');
 
 /**
  * @param {Browser} browser 
@@ -97,6 +99,7 @@ function delay(ms) {
     const browser = await puppeteer.launch({
         executablePath: "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe",
         headless: false,
+        userDataDir: USER_DATA_DIR,
         defaultViewport: {
             width: 1920,
             height: 1080
