@@ -87,8 +87,11 @@ function delay(ms) {
         console.warn(`没有提供输出路径, 使用默认路径: ${DEFAULT_OUTPUT_DIR}/${param}`);
         outputDir = DEFAULT_OUTPUT_DIR + "/" + param;
     }
+    
+    // 确保输出目录存在
     if (!fs.existsSync(outputDir)) {
         fs.mkdirSync(outputDir, { recursive: true });
+        console.log(`创建输出目录: ${outputDir}`);
     }
     const baseUrl = `https://book.qq.com/book-detail/${param}`;
     const browser = await puppeteer.launch({
@@ -127,7 +130,9 @@ function delay(ms) {
         }
 
         var filename = `${element.cid}-${element.chapterName}.md`.replace(/ /g, "").replace(/\\/g, "").replace(/\//g, "");
-        fs.writeFileSync(`${outputDir}\\${filename}`, `${markdownContent}\n`, 'utf-8');
+        const filePath = `${outputDir}/${filename}`.replace(/\\/g, '/');
+        fs.writeFileSync(filePath, `${markdownContent}\n`, 'utf-8');
+        console.log(`已保存: ${filename}`);
         await delay(500);
     }
     console.log('导出完成');
